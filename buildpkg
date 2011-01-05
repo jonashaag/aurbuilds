@@ -1,0 +1,17 @@
+#!/bin/sh
+BASE_URL=http://aur.archlinux.org/packages
+complain() { echo $@ >&2; exit 1; }
+cd $HOME
+case $1 in
+  --download)
+      status=`curl -sS -o $2.tar.gz $BASE_URL/$2/$2.tar.gz -w "%{http_code}"`
+      if [ $? -ne 0 ] || [ $status -ne 200 ]; then complain "download failed"; fi
+      tar xzf $2.tar.gz || complain "extraction failed, file is `file $2.tar.gz`"
+      rm $2.tar.gz
+      ;;
+  --build)
+      cd $2 && makepkg || exit $?
+      ;;
+  *) complain "Unknown option" $2
+     ;;
+esac
